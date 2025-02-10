@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "comfydock-core>=0.1.0",
     "fastapi[all]>=0.115.8",
     "pydantic>=2.10.6",
     "pydantic-settings>=2.7.1",

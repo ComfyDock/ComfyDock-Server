@@ -21,7 +21,7 @@ def run():
 
     try:
         print("Starting server...")
-        server.start()
+        server.start_backend()
 
         # Keep server running for manual testing
         input("Press Enter to stop server...")

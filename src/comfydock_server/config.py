@@ -5,7 +5,7 @@ class ServerConfig(BaseSettings):
     db_file_path: str = "environments.json"
     user_settings_file_path: str = "user_settings.json"
     frontend_image: str = "akatzai/comfy-env-frontend"
-    frontend_version: str = "0.5.1"
+    frontend_version: str = "latest"
     backend_host: str = "127.0.0.1"
     backend_port: int = 5172
     frontend_port: int = 8000
