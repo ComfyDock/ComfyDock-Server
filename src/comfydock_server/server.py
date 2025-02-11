@@ -8,6 +8,9 @@ from .config import ServerConfig
 import uvicorn
 import threading
 from .app import create_app
+import logging
+import logging.handlers
+
 
 class ComfyDockServer:
     def __init__(self, config: ServerConfig):
@@ -16,6 +19,45 @@ class ComfyDockServer:
         self.server_thread = None
         self.docker = DockerManager(config)
         self.running = False
+        
+    def set_log_level(self, level: int | str = logging.INFO):
+        logging.config.dictConfig({
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "detailed": {
+                    "format": "%(asctime)s %(name)s [%(levelname)s] %(message)s",
+                    "datefmt": "%Y-%m-%d %H:%M:%S %z"
+                }
+            },
+            "handlers": {
+                "console": {
+                    "class": "logging.StreamHandler",
+                    "formatter": "detailed",
+                    "level": "INFO"
+                },
+                "file": {
+                    "class": "logging.handlers.RotatingFileHandler",
+                    "formatter": "detailed",
+                    "filename": "comfydock.log",
+                    "mode": "a",
+                    "maxBytes": 10485760,
+                    "backupCount": 3,
+                    "level": "INFO"
+                }
+            },
+            "loggers": {
+                "": {  # root logger
+                    "handlers": ["console", "file"],
+                    "level": "INFO",
+                },
+                "comfydock_core": {
+                    "handlers": ["console", "file"],
+                    "level": "INFO",
+                    "propagate": False
+                },
+            }
+        })
 
     def start(self):
         """Start both backend server and frontend container"""
@@ -36,6 +78,7 @@ class ComfyDockServer:
             app=create_app(self.config),
             host=self.config.backend_host,
             port=self.config.backend_port,
+            log_config=None
         )
         self.server = uvicorn.Server(config)
         

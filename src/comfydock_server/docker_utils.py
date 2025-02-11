@@ -1,25 +1,11 @@
 from comfydock_core.docker_interface import DockerInterface, DockerInterfaceContainerNotFoundError
 from .config import ServerConfig
-from comfydock_core.logging import get_logger
 import logging
 
 class DockerManager:
     def __init__(self, config: ServerConfig):
         self.config = config
         self.docker_interface = DockerInterface()
-
-    @staticmethod
-    def set_docker_interface_log_level(level: int | str):
-        """
-        Set the logging level for the DockerInterface logger.
-        
-        Args:
-            level: Logging level (e.g., logging.INFO, 'INFO', logging.DEBUG, 'DEBUG')
-        """
-        docker_interface_logger = get_logger('comfydock_core.docker_interface')
-        if isinstance(level, str):
-            level = getattr(logging, level.upper())
-        docker_interface_logger.setLevel(level)
 
     def start_frontend(self):
         """Start the frontend container using core DockerInterface"""
