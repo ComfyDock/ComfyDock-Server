@@ -9,7 +9,8 @@ import uvicorn
 import threading
 from .app import create_app
 import logging
-import logging.handlers
+
+logger = logging.getLogger(__name__)
 
 
 class ComfyDockServer:
@@ -19,61 +20,29 @@ class ComfyDockServer:
         self.server_thread = None
         self.docker = DockerManager(config)
         self.running = False
-        
-    def set_log_level(self, level: int | str = logging.INFO):
-        logging.config.dictConfig({
-            "version": 1,
-            "disable_existing_loggers": False,
-            "formatters": {
-                "detailed": {
-                    "format": "%(asctime)s %(name)s [%(levelname)s] %(message)s",
-                    "datefmt": "%Y-%m-%d %H:%M:%S %z"
-                }
-            },
-            "handlers": {
-                "console": {
-                    "class": "logging.StreamHandler",
-                    "formatter": "detailed",
-                    "level": "INFO"
-                },
-                "file": {
-                    "class": "logging.handlers.RotatingFileHandler",
-                    "formatter": "detailed",
-                    "filename": "comfydock.log",
-                    "mode": "a",
-                    "maxBytes": 10485760,
-                    "backupCount": 3,
-                    "level": "INFO"
-                }
-            },
-            "loggers": {
-                "": {  # root logger
-                    "handlers": ["console", "file"],
-                    "level": "INFO",
-                },
-                "comfydock_core": {
-                    "handlers": ["console", "file"],
-                    "level": "INFO",
-                    "propagate": False
-                },
-            }
-        })
+        logger.info("ComfyDockServer initialized with config: %s", config)
 
     def start(self):
         """Start both backend server and frontend container"""
+        logger.info("Starting ComfyDockServer...")
         self.docker.start_frontend()
+        logger.info("Frontend container started")
         self.start_backend()
         self.running = True
         self._register_signal_handlers()
+        logger.info("ComfyDockServer startup complete")
 
     def stop(self):
         """Stop both components"""
+        logger.info("Stopping ComfyDockServer...")
         self.stop_backend()
         self.docker.stop_frontend()
         self.running = False
+        logger.info("ComfyDockServer stopped")
 
     def start_backend(self):
         """Start the FastAPI server using uvicorn programmatically"""
+        logger.info("Starting backend server on %s:%s", self.config.backend_host, self.config.backend_port)
         config = uvicorn.Config(
             app=create_app(self.config),
             host=self.config.backend_host,
@@ -85,20 +54,25 @@ class ComfyDockServer:
         # Run server in a separate thread since server.run() is blocking
         self.server_thread = threading.Thread(target=self.server.run)
         self.server_thread.start()
+        logger.info("Backend server thread started")
 
     def stop_backend(self):
         """Stop the backend server"""
         if self.server:
+            logger.info("Stopping backend server...")
             self.server.should_exit = True
             if self.server_thread:
                 self.server_thread.join()
+                logger.info("Backend server thread stopped")
 
     def _register_signal_handlers(self):
         """Handle graceful shutdown on SIGINT/SIGTERM"""
+        logger.info("Registering signal handlers")
         signal.signal(signal.SIGINT, self._handle_shutdown)
         signal.signal(signal.SIGTERM, self._handle_shutdown)
 
     def _handle_shutdown(self, signum, frame):
         """Signal handler for shutdown"""
+        logger.info("Received shutdown signal %s", signum)
         self.stop()
         sys.exit(0)
