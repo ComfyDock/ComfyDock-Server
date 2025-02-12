@@ -5,10 +5,14 @@ from ..config import ServerConfig
 
 router = APIRouter(prefix="/user-settings", tags=["user_settings"])
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 @router.get("", response_model=UserSettings)
 def get_user_settings(user_settings_manager=Depends(get_user_settings_manager)):
     try:
+        logger.debug("Getting user settings")
         return user_settings_manager.load()
     except Exception as e:
         raise HTTPException(500, str(e))
@@ -19,6 +23,7 @@ def update_user_settings(
     settings: UserSettings, user_settings_manager=Depends(get_user_settings_manager)
 ):
     try:
+        logger.debug("Updating user settings")
         user_settings_manager.save(settings)
         return {"status": "success"}
     except Exception as e:
@@ -36,10 +41,12 @@ def create_folder(
     """
     try:
         folder_name = folder_data["name"]
+        logger.debug(f"Creating folder: {folder_name}")
         settings = user_settings_manager.load()
         updated_settings = user_settings_manager.create_folder(settings, folder_name)
         user_settings_manager.save(updated_settings)
         new_folder = next(f for f in updated_settings.folders if f.name == folder_name)
+        logger.debug(f"Folder created: {new_folder.id}, {new_folder.name}")
         return {"id": new_folder.id, "name": new_folder.name}
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -58,6 +65,7 @@ def update_folder(
     Update a folder's name.
     """
     try:
+        logger.debug(f"Updating folder: {folder_id}")
         new_name = folder_data["name"]
         settings = user_settings_manager.load()
         updated_settings = user_settings_manager.update_folder(
@@ -65,6 +73,7 @@ def update_folder(
         )
         user_settings_manager.save(updated_settings)
         updated_folder = next(f for f in updated_settings.folders if f.id == folder_id)
+        logger.debug(f"Folder updated: {updated_folder.id}, {updated_folder.name}")
         return {"id": updated_folder.id, "name": updated_folder.name}
     except ValueError as e:
         if "not found" in str(e).lower():
@@ -80,24 +89,17 @@ def delete_folder(
     folder_id: str,
     user_settings_manager=Depends(get_user_settings_manager),
     env_manager=Depends(get_env_manager),
-    config: ServerConfig = Depends(get_config),
 ):
     """
     Delete a folder. Will fail if any environment is still using this folder.
     """
     try:
-        # Check if folder is used by any environments
-        envs = env_manager.load_environments()
-        for env in envs:
-            if folder_id in env.folderIds:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Cannot delete folder - it contains environments.",
-                )
-
+        logger.debug(f"Deleting folder: {folder_id}")
         settings = user_settings_manager.load()
-        updated_settings = user_settings_manager.delete_folder(settings, folder_id)
+        envs = env_manager.load_environments()
+        updated_settings = user_settings_manager.delete_folder(settings, folder_id, envs)
         user_settings_manager.save(updated_settings)
+        logger.debug(f"Folder deleted: {folder_id}")
         return {"status": "deleted"}
     except ValueError as e:
         raise HTTPException(404, str(e))
