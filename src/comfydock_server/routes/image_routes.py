@@ -32,9 +32,35 @@ def get_image_tags(config: ServerConfig = Depends(get_config)):
         data = response.json().get("results", [])
 
         # Parse the repo name from the DockerHub URL
-        # e.g. from https://hub.docker.com/v2/repositories/akatzai/comfydock-env/tags
-        # we'll extract akatzai/comfydock-env
-        repo_name = config.dockerhub_tags_url.split("/repositories/")[1].split("/tags")[0]
+        # Handle both formats:
+        # Old: https://hub.docker.com/v2/repositories/akatzai/comfydock-env/tags
+        # New: https://hub.docker.com/v2/namespaces/akatzai/repositories/comfydock-env/tags?page_size=100
+        url = config.dockerhub_tags_url
+        
+        # Remove query parameters if present
+        if "?" in url:
+            url = url.split("?")[0]
+            
+        repo_name = ""
+        if "/namespaces/" in url:
+            # New format
+            parts = url.split("/")
+            # Find indices of namespaces and repositories
+            try:
+                namespace_idx = parts.index("namespaces")
+                repo_idx = parts.index("repositories")
+                
+                namespace = parts[namespace_idx + 1]
+                repository = parts[repo_idx + 1]
+                repo_name = f"{namespace}/{repository}"
+                logger.info(f"Parsed repo name from new URL format: {repo_name}")
+            except (ValueError, IndexError) as e:
+                logger.error(f"Error parsing repository name from URL: {e}")
+                repo_name = "unknown/unknown"
+        else:
+            # Original format
+            repo_name = url.split("/repositories/")[1].split("/tags")[0]
+            logger.info(f"Parsed repo name from original URL format: {repo_name}")
 
         tags_info = []
         for tag in data:

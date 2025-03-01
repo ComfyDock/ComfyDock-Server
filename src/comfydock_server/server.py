@@ -36,7 +36,10 @@ class ComfyDockServer:
         """Stop both components"""
         logger.info("Stopping ComfyDockServer...")
         self.stop_backend()
-        self.docker.stop_frontend()
+        try:
+            self.docker.stop_frontend()
+        except Exception as e:
+            logger.warning("Error stopping frontend container: %s", e)
         self.running = False
         logger.info("ComfyDockServer stopped")
 
