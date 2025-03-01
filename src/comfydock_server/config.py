@@ -12,7 +12,7 @@ class ServerConfig(BaseSettings):
     frontend_container_port: int = 8000
     frontend_host_port: int = 8000
     allow_multiple_containers: bool = False
-    dockerhub_images_url: str = "https://hub.docker.com/v2/namespaces/akatzai/repositories/comfyui-env/tags?page_size=100"
+    dockerhub_tags_url: str = "https://hub.docker.com/v2/namespaces/akatzai/repositories/comfydock-env/tags?page_size=100"
 
     class Config:
         env_prefix = "COMFYDOCK_"
