@@ -16,9 +16,6 @@ jobs:
 
     - name: Install uv
       uses: astral-sh/setup-uv@v5
-      with:
-        version: "0.5.29"
-        enable-cache: true  # Optional but recommended for faster builds
 
     - name: Install dependencies
       run: uv sync
