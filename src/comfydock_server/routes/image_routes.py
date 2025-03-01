@@ -79,6 +79,7 @@ def pull_image(
     """
     Pull a Docker image and stream the pull progress.
     """
+    logger.info(f"Starting pull for Docker image: {image}")
 
     def image_pull_stream():
         layers = {}
@@ -92,9 +93,9 @@ def pull_image(
 
                 if layer_id:
                     if status == "Pull complete":
-                        pass  # layer is done
+                        logger.info(f"Layer {layer_id} pull complete")
                     elif status == "Already exists":
-                        pass
+                        logger.warning(f"Layer {layer_id} already exists")
                     elif "current" in progress_detail and "total" in progress_detail:
                         current = progress_detail.get("current", 0)
                         total = progress_detail.get("total", 0)
@@ -113,11 +114,16 @@ def pull_image(
                             if total_download_size > 0
                             else 0
                         )
+                        if overall_progress % 20 == 0:  # Log every 20% progress
+                            logger.info(f"Pull progress for {image}: {overall_progress:.1f}%")
                         yield f"data: {json.dumps({'progress': overall_progress})}\n\n"
 
+            logger.info(f"Successfully completed pull for image: {image}")
             yield f"data: {json.dumps({'progress': 100, 'status': 'completed'})}\n\n"
         except DockerInterfaceError as e:
-            yield f"data: {json.dumps({'error': f'Error pulling image {image}: {e}'})}\n\n"
+            error_msg = f"Error pulling image {image}: {e}"
+            logger.error(error_msg)
+            yield f"data: {json.dumps({'error': error_msg})}\n\n"
 
     return StreamingResponse(image_pull_stream(), media_type="text/event-stream")
 
