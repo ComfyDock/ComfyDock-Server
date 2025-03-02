@@ -5,9 +5,8 @@ class ServerConfig(BaseSettings):
     db_file_path: str = "environments.json"
     user_settings_file_path: str = "user.settings.json"
     frontend_container_name: str = "comfydock-frontend"
-    frontend_image: str = "akatzai/comfydock-frontend"
-    frontend_version: str = "latest"
-    backend_host: str = "127.0.0.1"
+    frontend_image: str = "akatzai/comfydock-frontend:latest"
+    backend_host: str = "localhost"
     backend_port: int = 5172
     frontend_container_port: int = 8000
     frontend_host_port: int = 8000
