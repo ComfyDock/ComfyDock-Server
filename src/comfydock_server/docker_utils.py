@@ -12,7 +12,7 @@ class DockerManager:
 
     def start_frontend(self):
         """Start the frontend container using core DockerInterface"""
-        image_name = f"{self.config.frontend_image}:{self.config.frontend_version}"
+        image_name = self.config.frontend_image
         logger.info("Starting frontend container with image: %s", image_name)
         
         # First check if the image exists, if not, pull it
@@ -42,6 +42,10 @@ class DockerManager:
                 image=image_name,
                 name=self.config.frontend_container_name,
                 ports={f'{self.config.frontend_container_port}/tcp': self.config.frontend_host_port},
+                environment={
+                    "VITE_API_BASE_URL": f"http://{self.config.backend_host}:{self.config.backend_port}",
+                    "VITE_API_WS_URL": f"ws://{self.config.backend_host}:{self.config.backend_port}/ws",
+                },
                 detach=True,
                 remove=True
             )
