@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from comfydock_core.user_settings import UserSettings
+from comfydock_core.user_settings import UserSettings, UserSettingsNotFoundError
 from .dependencies import get_user_settings_manager, get_env_manager, get_config
 from ..config import ServerConfig
 
@@ -14,6 +14,8 @@ def get_user_settings(user_settings_manager=Depends(get_user_settings_manager)):
     try:
         logger.debug("Getting user settings")
         return user_settings_manager.load()
+    except UserSettingsNotFoundError as e:
+        raise HTTPException(404, str(e))
     except Exception as e:
         raise HTTPException(500, str(e))
 
