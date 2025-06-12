@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from comfydock_core.user_settings import UserSettings, UserSettingsNotFoundError
 from .dependencies import get_user_settings_manager, get_env_manager, get_config
-from ..config import ServerConfig
-
+from ..config import AppConfig
 router = APIRouter(prefix="/user-settings", tags=["user_settings"])
 
 import logging
@@ -36,7 +35,7 @@ def update_user_settings(
 def create_folder(
     folder_data: dict,
     user_settings_manager=Depends(get_user_settings_manager),
-    config: ServerConfig = Depends(get_config),
+    config: AppConfig = Depends(get_config),
 ):
     """
     Create a new folder. Expects a JSON payload with a "name" key.
@@ -61,7 +60,7 @@ def update_folder(
     folder_id: str,
     folder_data: dict,
     user_settings_manager=Depends(get_user_settings_manager),
-    config: ServerConfig = Depends(get_config),
+    config: AppConfig = Depends(get_config),
 ):
     """
     Update a folder's name.

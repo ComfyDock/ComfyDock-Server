@@ -1,6 +1,6 @@
 [project]
 name = "comfydock_server"
-version = "0.2.1"
+version = "0.3.0"
 description = "ComfyDock Server"
 readme = "README.md"
 authors = [
@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "comfydock-core>=0.2.1",
+    "comfydock-core==0.2.1",
     "fastapi[all]>=0.115.8",
     "pydantic>=2.10.6",
     "pydantic-settings>=2.7.1",

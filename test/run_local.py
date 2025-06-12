@@ -1,23 +1,40 @@
-from comfydock_server.config import ServerConfig
+from comfydock_server.config import load_config
 from comfydock_server.server import ComfyDockServer
-
+import logging
 
 def run():
-    # Create test configuration
-    config = ServerConfig(
-        comfyui_path="./ComfyUI",
-        db_file_path="./environments.json",
-        user_settings_file_path="./user.settings.json",
-        frontend_image="comfydock-frontend",
-        frontend_version="0.1.1",
-        frontend_port=8000,
-        backend_port=5172,
-        backend_host="127.0.0.1",
-        allow_multiple_containers=False,
-    )
+    
+    overrides = {
+        "defaults": {
+            "comfyui_path": "./ComfyUI",
+            "db_file_path": "./environments.json",
+            "user_settings_file_path": "./user.settings.json",
+        },
+        "frontend": {
+            "image": "akatzai/comfydock-frontend:0.2.0",
+            "port": 8000,
+        },
+        "backend": {
+            "port": 5172,
+            "host": "localhost",
+        },
+        "advanced": {
+            "log_level": "DEBUG",
+            "check_for_updates": False,
+            "update_check_interval_days": 0,
+        },
+    }
 
-    # Initialize server
-    server = ComfyDockServer(config)
+    # --------------------------------------------------------------------- #
+    # 2. Load + validate final AppConfig.
+    #    (You could also give user_config_path=/tmp/foo.json here.)
+    # --------------------------------------------------------------------- #
+    app_cfg = load_config(cli_overrides=overrides)
+
+    # Optional: configure logging right away
+    logging.config.dictConfig(app_cfg.logging.__root__)
+
+    server = ComfyDockServer(app_cfg)
 
     try:
         print("Starting server...")
