@@ -8,7 +8,7 @@ class DockerManager:
     def __init__(self, config: AppConfig):
         self.config = config
         self.docker_interface = DockerInterface()
-        logger.info("DockerManager initialized with config: %s", config)
+        logger.debug("DockerManager initialized with config: %s", config)
 
     def start_frontend(self):
         """Start the frontend container using core DockerInterface"""

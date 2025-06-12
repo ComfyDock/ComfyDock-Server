@@ -20,7 +20,7 @@ class ComfyDockServer:
         self.server_thread = None
         self.docker = DockerManager(config)
         self.running = False
-        logger.info("ComfyDockServer initialized with config: %s", config)
+        logger.debug("ComfyDockServer initialized with config: %s", config)
 
     def start(self):
         """Start both backend server and frontend container"""
