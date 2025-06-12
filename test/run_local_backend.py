@@ -1,5 +1,5 @@
 import logging
-from comfydock_server.config import ServerConfig
+from comfydock_server.config import load_config
 from comfydock_server.server import ComfyDockServer
 
 
@@ -30,19 +30,16 @@ def run():
     logger = configure_logging()
     logger.info("Starting ComfyDock server in local development mode")
     
-    # Create test configuration
-    config = ServerConfig(
-        comfyui_path="./ComfyUI",
-        db_file_path="./environments.json",
-        user_settings_file_path="./user.settings.json",
-        backend_port=5172,
-        backend_host="127.0.0.1",
-        allow_multiple_containers=False,
-        dockerhub_tags_url="https://hub.docker.com/v2/repositories/akatzai/comfydock-env/tags",
-    )
+    overrides = {
+        "frontend": {
+            "image": "akatzai/comfydock-frontend:0.2.0",
+        },
+    }
+    
+    app_cfg = load_config(cli_overrides=overrides)
 
     # Initialize server
-    server = ComfyDockServer(config)
+    server = ComfyDockServer(app_cfg)
 
     try:
         logger.info("Starting server...")

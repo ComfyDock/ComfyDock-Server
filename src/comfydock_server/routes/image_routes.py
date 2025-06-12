@@ -2,7 +2,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from .dependencies import get_env_manager, get_config
-from ..config import ServerConfig
+from ..config import AppConfig
 from comfydock_core.docker_interface import (
     DockerInterfaceImageNotFoundError,
     DockerInterfaceError,
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/images", tags=["images"])
 
 
 @router.get("/tags")
-def get_image_tags(config: ServerConfig = Depends(get_config)):
+def get_image_tags(config: AppConfig = Depends(get_config)):
     """
     Returns a list of Docker image tags along with metadata:
       - tagName
@@ -28,14 +28,14 @@ def get_image_tags(config: ServerConfig = Depends(get_config)):
     """
     logger.info("Fetching image tags from DockerHub")
     try:
-        response = requests.get(config.dockerhub_tags_url)
+        response = requests.get(config.defaults.dockerhub_tags_url)
         data = response.json().get("results", [])
 
         # Parse the repo name from the DockerHub URL
         # Handle both formats:
         # Old: https://hub.docker.com/v2/repositories/akatzai/comfydock-env/tags
         # New: https://hub.docker.com/v2/namespaces/akatzai/repositories/comfydock-env/tags?page_size=100
-        url = config.dockerhub_tags_url
+        url = config.defaults.dockerhub_tags_url
         
         # Remove query parameters if present
         if "?" in url:

@@ -4,7 +4,7 @@ import signal
 import sys
 from typing import Optional
 from .docker_utils import DockerManager
-from .config import ServerConfig
+from .config import AppConfig
 import uvicorn
 import threading
 from .app import create_app
@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class ComfyDockServer:
-    def __init__(self, config: ServerConfig):
+    def __init__(self, config: AppConfig):
         self.config = config
         self.server = None
         self.server_thread = None
         self.docker = DockerManager(config)
         self.running = False
-        logger.info("ComfyDockServer initialized with config: %s", config)
+        logger.debug("ComfyDockServer initialized with config: %s", config)
 
     def start(self):
         """Start both backend server and frontend container"""
@@ -45,11 +45,11 @@ class ComfyDockServer:
 
     def start_backend(self):
         """Start the FastAPI server using uvicorn programmatically"""
-        logger.info("Starting backend server on %s:%s", self.config.backend_host, self.config.backend_port)
+        logger.info("Starting backend server on %s:%s", self.config.backend.host, self.config.backend.port)
         config = uvicorn.Config(
             app=create_app(self.config),
-            host=self.config.backend_host,
-            port=self.config.backend_port,
+            host=self.config.backend.host,
+            port=self.config.backend.port,
             log_config=None
         )
         self.server = uvicorn.Server(config)

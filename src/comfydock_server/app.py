@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .config import ServerConfig
+from .config import AppConfig
 from .routes import (
     environment_routes,
     image_routes,
@@ -15,13 +15,13 @@ from comfydock_core.user_settings import UserSettingsManager
 from comfydock_core.connection import ConnectionManager
 
 
-def create_app(config: ServerConfig) -> FastAPI:
+def create_app(config: AppConfig) -> FastAPI:
     # Initialize core components first
     connection_manager = ConnectionManager()
-    env_manager = EnvironmentManager(config.db_file_path)
+    env_manager = EnvironmentManager(config.defaults.db_file_path)
     user_settings_manager = UserSettingsManager(
-        config.user_settings_file_path,
-        default_comfyui_path=config.comfyui_path,
+        config.defaults.user_settings_file_path,
+        default_comfyui_path=config.defaults.comfyui_path,
     )
 
     # Set up WebSocket manager
