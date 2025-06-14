@@ -52,3 +52,10 @@ class AppConfig(BaseModel):
         if isinstance(v, str):
             return os.path.expandvars(os.path.expanduser(v))
         return v
+    
+    def update_from_dict(self, data: dict):
+        """Update the config with data from a dictionary."""
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        return self

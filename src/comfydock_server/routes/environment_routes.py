@@ -143,3 +143,22 @@ def stream_container_logs(env_id: str, env_manager=Depends(get_env_manager)):
         raise HTTPException(404, "Container not found.")
     except Exception as e:
         raise HTTPException(500, str(e))
+
+@router.post("/{env_id}/commit")
+async def commit_environment(env_id: str,
+                            repo_name: str = Query(..., description="The name of the repository to commit to"), 
+                            tag_name: str = Query(..., description="The tag name to commit to"), 
+                            env_manager=Depends(get_env_manager)):
+    """
+    Commit an environment to a new image.
+    """
+    try:
+        print(f"Committing environment {env_id} to {repo_name}:{tag_name}")
+        container = env_manager.docker_iface.get_container(env_id)
+        print(f"Container: {container}")
+        env = env_manager.docker_iface.commit_container(container, repo_name, tag_name)
+        return {"status": "success", "container_id": env.id}
+    except DockerInterfaceContainerNotFoundError:
+        raise HTTPException(404, "Container not found.")
+    except Exception as e:
+        raise HTTPException(500, str(e))
